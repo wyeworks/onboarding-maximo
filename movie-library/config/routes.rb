@@ -8,12 +8,11 @@ Rails.application.routes.draw do
   resources :movies, only: %i[index show destroy update create]
   resources :users, only: %i[index show destroy update create]
   resources :sources, only: %i[index show destroy update create]
-  resources :user_movies, only: %i[index show destroy update create]
 
   get '/movies/:id/cast', to: "movies#cast"
   get '/movies/:id/director', to: "movies#director"
   get '/movies/:id/source', to: "movies#source"
-  
+
   # Defines the root path route ("/")
   # root "posts#index"
 end

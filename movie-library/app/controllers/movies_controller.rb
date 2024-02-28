@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-  # skip_before_action :verify_authenticity_token
+  before_action :get_movie, only: [:show, :destroy, :update]
 
   def index
     movies = Movie.all
@@ -7,8 +7,7 @@ class MoviesController < ApplicationController
   end
 
   def show
-    movie = Movie.find(params[:id])
-    render json: movie
+    render json: @movie
   end
 
   def create
@@ -18,45 +17,35 @@ class MoviesController < ApplicationController
     movie = Movie.new(movie_params)
 
     if movie.save
-      render json: '{"message":"Successfully created movie"}'
+      render json: movie
     else
-      render json: "{'message':'Successfully created movie', 'errors': #{movie.errors.as_json}}"
+      render json: { message: "Error while creating movie", errors: movie.errors.as_json }
     end
   end
 
   def destroy
-    movie = Movie.find(params[:id])
-    movie.destroy
-    redirect_to movies_path, status: :see_other, notice: "The movie was removed succesfully"
-  end
-
-  def update
-    movie = Movie.find(params[:id])
-    if movie.update(movie_params)
-      redirect_to movie_path(movie)
+    if @movie.destroy
+      render json: { message: "The movie ##{params[:id]} was removed successfully" }
     else
-      render json: { error: "Failed to update movie" }, status: :unprocessable_entity
+      render json: { message: "The movie ##{params[:id]} couldn't be removed", errors: @movie.errors.as_json }
     end
   end
 
-  def cast
-    movie = Movie.find(params[:id])
-    render json: movie.actors
-  end
-
-  def director
-    movie = Movie.find(params[:id])
-    render json: movie.director
-  end
-
-  def source
-    movie = Movie.find(params[:id])
-    render json: movie.source
+  def update
+    if @movie.update(movie_params)
+      render json: @movie
+    else
+      render json: { error: "Failed to update movie" }, status: :unprocessable_entity
+    end
   end
 
   private
 
   def movie_params
     params.permit(:title, :genre, :score, :director_id, :cast_id, :source_id, :release_date)
+  end
+
+  def get_movie
+    @movie = Movie.find(params[:id])
   end
 end
